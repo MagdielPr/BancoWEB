@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Clientes - Sistema Bancário</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+
+        .search-button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #0056b3;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-size: 12px;
+        }
+
+        .edit-button {
+            background-color: #ffc107;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+        }
+
+        .edit-button:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Consulta de Clientes</h1>
+            <a href="/menu" class="back-button">Voltar ao Menu</a>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nome, CPF ou conta...">
+            <button class="search-button" onclick="buscarClientes()">Buscar</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Conta</th>
+                        <th>Tipo</th>
+                        <th>Saldo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="clientesTableBody">
+                    <!-- Os dados serão inseridos aqui via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function buscarClientes() {
+            const searchTerm = document.getElementById('searchInput').value;
+            
+            // Fazer requisição para o backend
+            fetch(`/api/clientes?search=${encodeURIComponent(searchTerm)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('clientesTableBody');
+                    tableBody.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="8" class="no-results">Nenhum cliente encontrado</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    data.forEach(cliente => {
+                        const row = `
+                            <tr>
+                                <td>${cliente.nome}</td>
+                                <td>${cliente.cpf}</td>
+                                <td>${cliente.email}</td>
+                                <td>${cliente.telefone}</td>
+                                <td>${cliente.conta}</td>
+                                <td>${cliente.tipo}</td>
+                                <td>R$ ${cliente.saldo.toFixed(2)}</td>
+                                <td class="actions">
+                                    <button class="action-button edit-button" onclick="editarCliente('${cliente.id}')">Editar</button>
+                                    <button class="action-button delete-button" onclick="excluirCliente('${cliente.id}')">Excluir</button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar clientes:', error);
+                    alert('Erro ao buscar clientes. Por favor, tente novamente.');
+                });
+        }
+
+        function editarCliente(id) {
+            // Implementar lógica de edição
+            console.log('Editar cliente:', id);
+        }
+
+        function excluirCliente(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                // Implementar lógica de exclusão
+                console.log('Excluir cliente:', id);
+            }
+        }
+
+        // Carregar clientes ao iniciar a página
+        window.onload = buscarClientes;
+    </script>
+</body>
+</html>
